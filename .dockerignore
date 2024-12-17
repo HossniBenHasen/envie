@@ -1,0 +1,24 @@
+.idea
+.vscode
+
+**/node_modules
+**/.gitignore
+
+npm-debug.log*
+.pnpm-debug.log*
+
+.DS_Store
+*.pem
+*.tsbuildinfo
+
+README.md
+#.env*.local
+#.env*
+
+/apps/envie-front/.next
+/apps/envie-front/out/
+/apps/envie-front/build
+/apps/envie-front/next-env.d.ts
+
+# maybe uncoment this line
+#/apps/envie-back/dist

@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+    envie-prod-backend:
+        container_name: envie-prod-backend
+        image: envie-prod-backend
+        restart: always
+        env_file:
+            - .env.production
+        build:
+            context: .
+            args:
+                ENV_FILE: .env.production
+            dockerfile: Dockerfile.prod
+            target: backend
+        ports:
+            - "${API_PORT}:3001"
+
+    envie-prod-frontend:
+        container_name: envie-prod-frontend
+        image: envie-prod-frontend
+        restart: always
+        env_file:
+            - .env.production
+        build:
+            context: .
+            args:
+                ENV_FILE: .env.production
+            dockerfile: Dockerfile.prod
+            target: frontend
+        ports:
+            -  "${FRONTEND_PORT}:3000"
+
+    envie-prod-postgres:
+        container_name: envie-prod-postgres
+        image: postgres:15.3-alpine3.18
+        restart: always
+        env_file:
+            - .env.production
+        environment:
+            PGDATA: /var/lib/postgresql/data/pgdata
+        ports:
+            - "${POSTGRES_PORT}:5432"
+        volumes:
+            - envie-prod-postgres-volume:/var/lib/postgresql/data:Z
+
+    envie-prod-adminer:
+        container_name: envie-prod-adminer
+        image: adminer
+        restart: always
+        env_file:
+            - .env.production
+        depends_on:
+            - envie-prod-postgres
+        ports:
+            - "${ADMINER_PORT}:8080"
+
+volumes:
+    envie-prod-postgres-volume:

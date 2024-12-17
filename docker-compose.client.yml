@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+    envie-client-backend:
+        container_name: envie-client-backend
+        image: docker.uha4point0.fr:5000/envie-prod-backend
+        restart: always
+        ports:
+            - "3001:3001"
+        env_file:
+            - .env.client
+        depends_on:
+            - envie-client-postgres
+
+    envie-client-frontend:
+        container_name: envie-client-frontend
+        image: docker.uha4point0.fr:5000/envie-prod-frontend
+        restart: always
+        ports:
+            - "3000:3000"
+            - "9229:9229"
+        env_file:
+            - .env.client
+        depends_on:
+            - envie-client-backend
+
+    envie-client-postgres:
+        container_name: envie-client-postgres
+        image: postgres:15.3-alpine3.18
+        restart: always
+        env_file:
+            - .env.client
+        environment:
+            PGDATA: /var/lib/postgresql/data/pgdata
+        ports:
+            - "5432:5432"
+        volumes:
+            - envie-client-postgres-volume:/var/lib/postgresql/data:Z
+
+    envie-client-adminer:
+        container_name: envie-client-adminer
+        image: adminer
+        restart: always
+        depends_on:
+            - envie-client-postgres
+        ports:
+            - "8080:8080"
+
+volumes:
+    envie-client-postgres-volume:

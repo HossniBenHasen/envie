@@ -1,0 +1,107 @@
+#FROM node:18.12.0-alpine3.16 as build
+#
+## Required for turbo post-install
+#RUN apk add --no-cache libc6-compat
+#RUN apk update
+#
+#RUN npm add -g pnpm
+#
+#WORKDIR /envie
+#
+#COPY package.json .
+#COPY pnpm-lock.yaml .
+#COPY pnpm-workspace.yaml .
+#COPY .npmrc .
+#COPY turbo.json .
+#
+##COPY apps/envie-front/package.json ./apps/envie-front/package.json
+#COPY apps/envie-back/package.json ./apps/envie-back/package.json
+#
+#COPY ./packages ./packages
+#
+#RUN pnpm i
+#
+##COPY ./apps/envie-front ./apps/envie-front
+#COPY ./apps/envie-back ./apps/envie-back
+#
+#RUN pnpm run build
+#
+#FROM node:18.12.0-alpine3.16 as backend
+#
+#WORKDIR /envie
+#
+#COPY --from=build /envie/apps/envie-back/dist ./dist
+#COPY --from=build /envie/apps/envie-back/node_modules ./node_modules
+#
+#CMD ["node", "dist/main.js"]
+
+
+FROM node:18.13.0-alpine AS build
+ARG ENV_FILE=.env.client
+WORKDIR /envie
+# Install base
+RUN apk add --no-cache libc6-compat
+RUN apk update
+RUN npm add -g pnpm
+
+# Copy for depencencies
+COPY .eslintrc.js .
+COPY .npmrc .
+COPY package.json .
+COPY pnpm-lock.yaml .
+COPY pnpm-workspace.yaml .
+COPY turbo.json .
+
+COPY apps/envie-back/package.json ./apps/envie-back/package.json
+COPY apps/envie-front/package.json ./apps/envie-front/package.json
+COPY ./packages ./packages
+#COPY .env.client ./apps/envie-front
+COPY ${ENV_FILE} ./apps/envie-front/${ENV_FILE}
+
+# Install Dependencies
+RUN pnpm i
+
+# Copy Code
+COPY ./apps/envie-back ./apps/envie-back
+COPY ./apps/envie-front ./apps/envie-front
+
+# Build Code
+RUN pnpm run build
+
+# Remove devDependencies
+#RUN pnpm install --production
+
+
+FROM node:18.13.0-alpine AS backend
+RUN npm add -g pnpm
+WORKDIR /envie
+
+COPY --from=build /envie/apps/envie-back/dist ./dist
+COPY --from=build /envie/apps/envie-back/package.json .
+COPY --from=build /envie/pnpm-workspace.yaml .
+COPY --from=build /envie/pnpm-lock.yaml .
+COPY --from=build /envie/.npmrc .
+COPY --from=build /envie/packages ./packages
+
+# TODO: test with add --prod
+RUN pnpm install
+
+CMD ["node", "dist/main.js"]
+
+FROM node:18.13.0-alpine AS frontend
+RUN npm add -g pnpm
+WORKDIR /envie
+
+COPY --from=build /envie/apps/envie-front/.next ./.next
+COPY --from=build /envie/apps/envie-front/package.json .
+COPY --from=build /envie/pnpm-workspace.yaml .
+COPY --from=build /envie/pnpm-lock.yaml .
+COPY --from=build /envie/.npmrc .
+COPY --from=build /envie/packages ./packages
+
+# TODO: test with add --prod
+RUN pnpm install
+
+CMD ["pnpm", "run", "start"]
+
+

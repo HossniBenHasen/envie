@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background: #629583;
+  color: white;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media all {
+  .page-break {
+    display: none;
+  }
+}
+@media print {
+  html, body {
+    background: none;
+  }
+  .page-break {
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+    display: block;
+    page-break-before: auto;
+  }
+}

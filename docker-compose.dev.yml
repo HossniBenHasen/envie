@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+    apps:
+        container_name: envie-apps
+        build:
+            context: .
+            dockerfile: Dockerfile.dev
+        ports:
+            - "3000:3000"
+            - "3001:3001"
+            - "9229:9229"
+        env_file:
+            - .env.development
+        depends_on:
+            - postgres
+        volumes:
+            - ./apps:/app/apps
+            - /app/node_modules
+            - /app/apps/envie-back/node_modules
+            - /app/apps/envie-back/dist
+            - /app/apps/envie-front/node_modules
+            - /app/apps/envie-front/.next
+            - /app/packages/eslint-config-custom/node_modules
+            - /app/packages/tsconfig/node_modules
+            - /app/packages/ui/node_modules
+
+    postgres:
+        container_name: envie-pg
+        image: postgres:latest
+        restart: on-failure
+        env_file:
+            - .env.development
+        environment:
+            PGDATA: /var/lib/postgresql/data/pgdata
+        ports:
+            - "5432:5432"
+        volumes:
+            - envie-dev-postgresql-volume:/var/lib/postgresql/data:Z
+    
+    adminer:
+        container_name: envie-adminer
+        image: adminer
+        depends_on:
+            - postgres
+        ports:
+            - "8080:8080"
+
+volumes:
+    envie-dev-postgresql-volume:

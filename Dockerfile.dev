@@ -1,0 +1,27 @@
+FROM node:18.12.0-alpine
+
+# Required for turbo post-install
+RUN apk add --no-cache libc6-compat
+RUN apk update
+
+RUN npm add -g pnpm
+
+WORKDIR /app
+
+COPY package.json .
+COPY pnpm-lock.yaml .
+COPY pnpm-workspace.yaml .
+COPY .npmrc .
+
+COPY apps/envie-front/package.json apps/envie-front/package.json
+COPY apps/envie-back/package.json apps/envie-back/package.json
+
+COPY packages packages
+
+RUN pnpm install
+
+COPY . .
+
+EXPOSE 3000 3001 9229
+
+CMD [ "pnpm", "run", "dev" ]
